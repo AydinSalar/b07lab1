@@ -2,52 +2,46 @@ import java.io.File;
 
 public class Driver {
     public static void main(String[] args) {
-        // 1) Default constructor (zero polynomial)
-        Polynomial p0 = new Polynomial();
-        System.out.println("p0(3) = " + p0.evaluate(3)); // expect 0.0
+        // zero polynomial
+        Polynomial z = new Polynomial();
+        System.out.println("z(-2) = " + z.evaluate(-2));
 
-        // 2) Build using non-zero coefficients and matching exponents
-        // p1(x) = 6 + 5x^3
-        double[] c1 = {6, 5};
-        int[] e1 = {0, 3};
-        Polynomial p1 = new Polynomial(c1, e1);
+        // pA(x) = -4 + 2x + 3x^5
+        double[] aCoeff = {-4, 2, 3};
+        int[]    aExp   = { 0, 1, 5};
+        Polynomial pA = new Polynomial(aCoeff, aExp);
 
-        // p2(x) = -2x - 9x^4
-        double[] c2 = {-2, -9};
-        int[] e2 = {1, 4};
-        Polynomial p2 = new Polynomial(c2, e2);
+        // pB(x) = 7 + 0.5x - x^3
+        double[] bCoeff = {7, 0.5, -1};
+        int[]    bExp   = {0,   1,   3};
+        Polynomial pB = new Polynomial(bCoeff, bExp);
 
-        // 3) Test add
-        Polynomial s = p1.add(p2); // s(x) = 6 + 5x^3 - 2x - 9x^4
-        System.out.println("s(0.1) = " + s.evaluate(0.1));
+        // add & multiply
+        Polynomial sum = pA.add(pB);      // combine like terms by exponent
+        Polynomial prod = pA.multiply(pB); // merged exponents in multiply
 
-        // 4) hasRoot test at x = 1
-        if (s.hasRoot(1)) {
-            System.out.println("1 is a root of s");
-        } else {
-            System.out.println("1 is not a root of s");
-        }
+        // evaluate at a few points
+        double x1 = -1.0;
+        double x2 = 0.5;
+        System.out.println("pA(" + x1 + ") = " + pA.evaluate(x1));
+        System.out.println("pB(" + x2 + ") = " + pB.evaluate(x2));
+        System.out.println("sum(0) = " + sum.evaluate(0));
+        System.out.println("prod(1) = " + prod.evaluate(1));
 
-        // 5) Test multiply
-        // m(x) = p1(x) * p2(x) = (6 + 5x^3) * (-2x - 9x^4)
-        //     = -12x - 54x^4 - 10x^4 - 45x^7
-        //     = -12x - 64x^4 - 45x^7
-        Polynomial m = p1.multiply(p2);
-        System.out.println("m(1) = " + m.evaluate(1)); // expect -12 - 64 - 45 = -121
+        // hasRoot checks (not expecting roots here)
+        System.out.println("pA has root at 0? " + pA.hasRoot(0));
+        System.out.println("pB has root at 2? " + pB.hasRoot(2));
 
-        // 6) Test saveToFile and File constructor round-trip
+        // file round-trip with a different filename
         try {
-            String fname = "poly_out.txt";
-            s.saveToFile(fname);
-            Polynomial fromFile = new Polynomial(new File(fname));
-
-            // Compare evaluations at a couple of points
-            double x1 = 0.0;
-            double x2 = 2.0;
-            System.out.println("s(0) vs fromFile(0): " + s.evaluate(x1) + " vs " + fromFile.evaluate(x1));
-            System.out.println("s(2) vs fromFile(2): " + s.evaluate(x2) + " vs " + fromFile.evaluate(x2));
-        } catch (Exception ex) {
-            System.out.println("File round-trip test failed: " + ex.getMessage());
+            String fname = "poly_test_out.txt";
+            prod.saveToFile(fname);
+            Polynomial readBack = new Polynomial(new File(fname));
+            // compare at two points to ensure parse/save symmetry
+            System.out.println("prod(-1) vs file(-1): " + prod.evaluate(-1) + " | " + readBack.evaluate(-1));
+            System.out.println("prod(3) vs file(3): " + prod.evaluate(3) + " | " + readBack.evaluate(3));
+        } catch (Exception e) {
+            System.out.println("IO test skipped: " + e.getMessage());
         }
     }
 }
